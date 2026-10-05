@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rule-Based AI Chatbot | Industrial Training Kit</title>
+    <meta name="description" content="A deterministic AI chatbot built using rules, dictionaries, input sanitization, and control flow.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="theme-dark">
+
+    <div class="app-layout">
+        <!-- Main Chat App Area -->
+        <main class="chat-container">
+            
+            <!-- App Header -->
+            <header class="app-header">
+                <div class="header-left">
+                    <div class="brand-badge">
+                        <div class="bot-status-dot pulse"></div>
+                        <span class="badge-text">Rule-Based AI</span>
+                    </div>
+                    <div class="title-group">
+                        <h1 class="project-title" id="mainTitle">Rule-Based AI Chatbot</h1>
+                        <p class="project-subtitle" id="mainSubtitle">A deterministic AI chatbot built using rules and control flow</p>
+                    </div>
+                </div>
+
+                <div class="header-actions">
+                    <button class="btn btn-secondary" id="btnKnowledgeBase" title="Explore Knowledge Base Intents">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-0.5-.05"/><path d="M6 6h10M6 10h10M6 14h6"/></svg>
+                        <span>Knowledge Base</span>
+                    </button>
+                    <button class="btn btn-secondary" id="btnToggleDebug" title="Toggle Developer Pipeline Inspector">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                        <span id="debugBtnLabel">Live Logic Inspector</span>
+                    </button>
+                    <button class="btn btn-secondary" id="btnClearChat" title="Clear message history">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        <span>Clear</span>
+                    </button>
+                    <button class="btn btn-danger" id="btnExitSession" title="Terminate current conversation session">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10"/></svg>
+                        <span>Exit</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Technical Spec Banner -->
+            <div class="spec-bar">
+                <div class="spec-item"><span class="spec-label">Architecture:</span> <span class="spec-val">Hash-Map O(1) Lookup</span></div>
+                <div class="spec-item"><span class="spec-label">Sanitization:</span> <span class="spec-val">.lower().strip() Normalization</span></div>
+                <div class="spec-item"><span class="spec-label">Engine:</span> <span class="spec-val">100% Deterministic (No LLM)</span></div>
+                <div class="spec-item"><span class="spec-label">Fallback:</span> <span class="spec-val">Safe dict.get() Default</span></div>
+            </div>
+
+            <!-- Messages Window -->
+            <section class="messages-area" id="messagesArea" aria-live="polite" aria-label="Conversation Messages">
+                <!-- Welcome Banner -->
+                <div class="welcome-card" id="welcomeCard">
+                    <div class="welcome-icon">⚡</div>
+                    <h2>Welcome to the Rule-Based AI Engine</h2>
+                    <p>This chatbot operates on deterministic rules, dictionary hash-maps, and input sanitization without generative machine learning models.</p>
+                    <div class="welcome-features">
+                        <div class="wf-item">✓ Input Sanitization Pipeline</div>
+                        <div class="wf-item">✓ Multi-Intent Knowledge Base</div>
+                        <div class="wf-item">✓ Safe Fallback System</div>
+                        <div class="wf-item">✓ Clean Exit Handler</div>
+                    </div>
+                </div>
+
+                <!-- Messages will be dynamically rendered here -->
+            </section>
+
+            <!-- Quick Intent Suggestion Chips -->
+            <div class="quick-chips-wrapper">
+                <span class="chips-label">Quick Prompts:</span>
+                <div class="chips-container" id="chipsContainer">
+                    <button class="chip" data-msg="hello">👋 hello</button>
+                    <button class="chip" data-msg="what is your name">🤖 what is your name</button>
+                    <button class="chip" data-msg="help">❓ help</button>
+                    <button class="chip" data-msg="how are you">😊 how are you</button>
+                    <button class="chip" data-msg="thank you">🙏 thank you</button>
+                    <button class="chip" data-msg="what time is it">⏰ what time is it</button>
+                    <button class="chip chip-test" data-msg="   HELLO   " title="Test uppercase & whitespace sanitization">🧪 "   HELLO   "</button>
+                    <button class="chip chip-test" data-msg="xyzabc" title="Test Fallback Response">⚠️ xyzabc (Fallback)</button>
+                    <button class="chip chip-exit" data-msg="bye" title="Test Exit Strategy">🛑 bye (Exit)</button>
+                </div>
+            </div>
+
+            <!-- Session Terminated Overlay (Hidden by default) -->
+            <div class="session-ended-banner" id="sessionEndedBanner" style="display: none;">
+                <div class="ended-content">
+                    <span class="ended-icon">🔒</span>
+                    <div>
+                        <strong>Session Terminated Cleanly</strong>
+                        <p>The chatbot has cleanly exited the conversation loop per exit command specifications.</p>
+                    </div>
+                    <button class="btn btn-primary" id="btnRestartSession">Restart Conversation</button>
+                </div>
+            </div>
+
+            <!-- Chat Input Footer -->
+            <footer class="input-footer" id="inputFooter">
+                <form id="chatForm" class="chat-form" autocomplete="off">
+                    <div class="input-wrapper">
+                        <input 
+                            type="text" 
+                            id="userInput" 
+                            class="chat-input" 
+                            placeholder="Type a message (e.g., 'hello', 'help', 'what is your name', 'bye')..." 
+                            autocomplete="off"
+                            spellcheck="false"
+                            required
+                        >
+                        <div class="input-hint" id="sanitizationPreview">Clean: <code id="previewText">-</code></div>
+                    </div>
+                    <button type="submit" class="btn btn-send" id="btnSend" title="Send Message (Enter)">
+                        <span>Send</span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    </button>
+                </form>
+            </footer>
+        </main>
+
+        <!-- Developer Mode Logic Inspector Drawer -->
+        <aside class="debug-panel" id="debugPanel">
+            <div class="debug-header">
+                <div class="debug-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                    <span>Developer Logic Inspector</span>
+                </div>
+                <button class="debug-close-btn" id="btnCloseDebug" title="Close Debug Panel">✕</button>
+            </div>
+
+            <div class="debug-body">
+                <p class="debug-intro">Real-time inspection of the deterministic decision-making pipeline for viva and project evaluation.</p>
+
+                <!-- Step 1: Raw Input -->
+                <div class="pipeline-step">
+                    <div class="step-badge">Step 1</div>
+                    <div class="step-content">
+                        <div class="step-title">Raw Input Received</div>
+                        <div class="step-box code-box" id="dbgRawInput">"hello"</div>
+                    </div>
+                </div>
+
+                <div class="pipeline-arrow">↓ <span>Sanitization (.lower().strip())</span></div>
+
+                <!-- Step 2: Sanitized Input -->
+                <div class="pipeline-step">
+                    <div class="step-badge">Step 2</div>
+                    <div class="step-content">
+                        <div class="step-title">Normalized & Sanitized String</div>
+                        <div class="step-box code-box highlight-box" id="dbgSanitizedInput">"hello"</div>
+                    </div>
+                </div>
+
+                <div class="pipeline-arrow">↓ <span>Intent Matching & Hash-Map Lookup</span></div>
+
+                <!-- Step 3: Intent & Rule -->
+                <div class="pipeline-step">
+                    <div class="step-badge">Step 3</div>
+                    <div class="step-content">
+                        <div class="step-title">Matched Intent & Applied Rule</div>
+                        <div class="step-meta">
+                            <div><span class="meta-label">Intent:</span> <span class="badge intent-badge" id="dbgIntent">greeting</span></div>
+                            <div><span class="meta-label">Type:</span> <span class="badge type-badge" id="dbgLookupType">hash_map_direct</span></div>
+                        </div>
+                        <div class="step-box rule-box" id="dbgRule">Rule: Exact Hash-Map Match (key='hello')</div>
+                    </div>
+                </div>
+
+                <div class="pipeline-arrow">↓ <span>Deterministic Output Generation</span></div>
+
+                <!-- Step 4: Final Output -->
+                <div class="pipeline-step">
+                    <div class="step-badge">Step 4</div>
+                    <div class="step-content">
+                        <div class="step-title">Chatbot Output Response</div>
+                        <div class="step-box resp-box" id="dbgResponse">"Hello! How can I help you today?"</div>
+                        <div class="step-timing">⏱ Execution Time: <strong id="dbgElapsed">0.12 ms</strong></div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Knowledge Base Cheatsheet Modal -->
+    <div class="modal-backdrop" id="kbModal" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>📖 Knowledge Base & Supported Intents</h3>
+                <button class="modal-close-btn" id="btnCloseModal">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-desc">All intents and triggers stored in the dictionary hash-map:</p>
+                <div class="intents-table-wrapper" id="intentsTableWrapper">
+                    <!-- Populated dynamically via /api/intents -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main JavaScript Logic -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
